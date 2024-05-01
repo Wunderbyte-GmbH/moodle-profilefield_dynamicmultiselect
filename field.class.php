@@ -100,7 +100,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
      * @param moodleform $mform
      */
     public function edit_field_add($mform) {
-        $mform->addElement('select', $this->inputname, format_string($this->field->name), $this->options);
+        $mform->addElement('autocomplete', $this->inputname, format_string($this->field->name), $this->options);
         $mform->getElement($this->inputname)->setMultiple(true);
     }
 
