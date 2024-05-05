@@ -46,6 +46,10 @@ class profile_define_dynamicmultiselect extends profile_define_base {
         );
         $form->setType('param1', PARAM_TEXT);
         $form->addHelpButton('param1', 'param1sqlhelp', 'profilefield_dynamicmultiselect');
+        $form->addElement('advcheckbox', 'param2', get_string('savekey', 'profilefield_dynamicmultiselect'),
+                get_string('savekeylabel', 'profilefield_dynamicmultiselect'), [], [0,1]);
+        // Set the default value
+        $form->setDefault('param2', 0);
         // Default data.
         $form->addElement('text', 'defaultdata', get_string('profiledefaultdata', 'admin'), 'size="50"');
         $form->setType('defaultdata', PARAM_TEXT);
@@ -154,7 +158,6 @@ class profile_define_dynamicmultiselect extends profile_define_base {
      */
     public function define_save_preprocess($data) {
         $data->param1 = str_replace("\r", '', $data->param1);
-
         return $data;
     }
 

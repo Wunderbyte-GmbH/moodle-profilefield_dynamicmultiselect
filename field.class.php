@@ -33,10 +33,10 @@
 class profile_field_dynamicmultiselect extends profile_field_base {
 
     /** @var array $options */
-    public $options;
+    public array $options;
 
-    /** @var int $datakey */
-    public $datakey;
+    /** @var array $datakey */
+    public array $datakey;
 
     /** @var  array @calls array indexed by @fieldid-$userid. It keeps track of recordset,
      * so that we don't do the query twice for the same field */
@@ -45,12 +45,13 @@ class profile_field_dynamicmultiselect extends profile_field_base {
     /**
      * Constructor method.
      *
-     * Pulls out the options for the menu from the database and sets the the corresponding key for the data if it exists.
+     * Pulls out the options for the menu from the database and sets the corresponding key for the data if it exists.
      *
      * @param int $fieldid
      * @param int $userid
      */
     public function __construct($fieldid=0, $userid=0) {
+        global $DB;
         // First call parent constructor.
         parent::__construct($fieldid, $userid);
         // Only if we actually need data.
@@ -60,11 +61,10 @@ class profile_field_dynamicmultiselect extends profile_field_base {
                 $rs = self::$acalls[$mykey];
             } else {
                 $sql = $this->field->param1;
-                global $DB;
                 $rs = $DB->get_records_sql($sql);
                 self::$acalls[$mykey] = $rs;
             }
-            $this->options = array();
+            $this->options = [];
             if ($this->field->required) {
                 $this->options[''] = get_string('choose').'...';
             }
@@ -76,9 +76,17 @@ class profile_field_dynamicmultiselect extends profile_field_base {
             // Set the data key.
             if ($this->data !== null) {
                 $this->data = str_replace("\r", '', $this->data);
-                $this->datatmp = explode("\n", $this->data);
-                foreach ($this->datatmp as $key => $option1) {
-                    $this->datakey[] = (int)array_search($option1, $this->options);
+                $datatmp = explode("\n", $this->data);
+                if ($this->field->param2 === '1') {
+                    foreach ($datatmp as $key => $option1) {
+                        if (isset($this->options[$option1])) {
+                            $this->datakey[] = $option1;
+                        }
+                    }
+                } else {
+                    foreach ($datatmp as $key => $option1) {
+                        $this->datakey[] = (int)array_search($option1, $this->options);
+                    }
                 }
             }
         }
@@ -90,7 +98,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
      * @param int $fieldid
      * @param int $userid
      */
-    public function profile_field_menu($fieldid=0, $userid=0) {
+    public function profile_field_menu(int $fieldid = 0, int $userid = 0) {
         self::__construct($fieldid, $userid);
     }
 
@@ -129,13 +137,16 @@ class profile_field_dynamicmultiselect extends profile_field_base {
         $string = '';
         if (is_array($data)) {
             foreach ($data as $key) {
-                if (isset($this->options[$key])) {
+                // Check if the id or the data value from the query should be saved.
+                if (isset($this->options[$key]) && $this->field->param2 === '1') {
+                    $string .= $key."\r\n";
+                } else if (isset($this->options[$key])){
                     $string .= $this->options[$key]."\r\n";
                 }
             }
             return substr($string, 0, -2);
         }
-        return isset($this->options[$data]) ? $this->options[$data] : null;
+        return $this->options[$data] ?? null;
     }
 
     /**
@@ -170,7 +181,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
      * @param string $value one of the values in menu options.
      * @return int options key for the menu
      */
-    public function convert_external_data($value) {
+    public function convert_external_data(string $value): ?int {
         $retval = array_search($value, $this->options);
 
         // If value is not found in options then return null, so that it can be handled
@@ -184,18 +195,21 @@ class profile_field_dynamicmultiselect extends profile_field_base {
     /**
      * Display the data for this field.
      */
-    public function display_data() {
+    public function display_data(): string {
         $sql = $this->field->param1;
         global $DB;
         $rs = $DB->get_records_sql($sql);
         $ret = '';
         foreach ($this->datakey as $key) {
             if (array_key_exists($key, $rs)) {
-                $ret .= $rs[$key]->data . "\r\n";
+                if ($this->field->param2 === '1') {
+                    $ret .= $key. "\r\n";
+                } else {
+                    $ret .= $rs[$key]->data . "\r\n";
+                }
             } else {
                 $ret .= 'N/A' . "\r\n";
             }
-
         }
         return $ret;
     }

@@ -37,4 +37,13 @@ $string['samplesqlvalues'] = 'Sample of possible values';
 $string['sqlerror'] = 'Error executing the query';
 $string['dynamicmultiselect:caneditsql'] = 'Can edit sql query for dynamic multiselect user custom field';
 $string['param1sqlhelp'] = 'Sql query';
-$string['param1sqlhelp_help'] = 'The query should return two column: data and id. Furthermore, it should return at least one value. Example: "select 1 id, \'hallo\' data"';
+$string['param1sqlhelp_help'] = 'The query should return two columns: data and id.
+ATTENTION: If you want that the data is saved, make id and data the same. If you wanto to save the keys 
+(example: save userids, but display usernames so you can select them in a user friendly way: 
+SELECT u.id as id
+CONCAT(u.firstname, u.lastname)
+AS data
+FROM mdl_user u), then make id and data different.
+Furthermore, it should return at least one value. Example: "select 1 id, \'hallo\' data"';
+$string['savekey'] = 'Check if you want to save the id value instead of the data value from your SQL query.';
+$string['savekeylabel'] = 'Save id of SQL query';
