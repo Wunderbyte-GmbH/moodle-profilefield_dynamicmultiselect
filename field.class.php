@@ -31,16 +31,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class profile_field_dynamicmultiselect extends profile_field_base {
-
     /** @var array $options */
     public array $options;
 
     /** @var array $datakey */
-    public array $datakey;
+    public static array $datakey;
 
     /** @var  array @calls array indexed by @fieldid-$userid. It keeps track of recordset,
      * so that we don't do the query twice for the same field */
-    private static $acalls = array();
+    private static array $acalls = [];
 
     /**
      * Constructor method.
@@ -53,7 +52,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
     public function __construct($fieldid=0, $userid=0) {
         global $DB;
         // First call parent constructor.
-        parent::__construct($fieldid, $userid);
+        parent::__construct($fieldid, $userid, $fielddata = null);
         // Only if we actually need data.
         if ($fieldid !== 0 && $userid !== 0) {
             $mykey = $fieldid.','.$userid; // It will always work because they are number, so no chance of ambiguity.
@@ -80,12 +79,12 @@ class profile_field_dynamicmultiselect extends profile_field_base {
                 if ($this->field->param2 === '1') {
                     foreach ($datatmp as $key => $option1) {
                         if (isset($this->options[$option1])) {
-                            $this->datakey[] = $option1;
+                            self::$datakey[] = $option1;
                         }
                     }
                 } else {
                     foreach ($datatmp as $key => $option1) {
-                        $this->datakey[] = (int)array_search($option1, $this->options);
+                        static::$datakey[] = (int)array_search($option1, $this->options);
                     }
                 }
             }
@@ -156,7 +155,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
      * @param stdClass $user
      */
     public function edit_load_user_data($user) {
-        $user->{$this->inputname} = $this->datakey;
+        $user->{$this->inputname} = profile_field_dynamicmultiselect::$datakey;
     }
 
     /**
@@ -171,7 +170,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
         }
         if ($this->is_locked() and !has_capability('moodle/user:update', context_system::instance())) {
             $mform->hardFreeze($this->inputname);
-            $mform->setConstant($this->inputname, $this->datakey);
+            $mform->setConstant($this->inputname, self::$datakey);
         }
     }
     /**
@@ -200,7 +199,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
         global $DB;
         $rs = $DB->get_records_sql($sql);
         $ret = '';
-        foreach ($this->datakey as $key) {
+        foreach (profile_field_dynamicmultiselect::$datakey as $key) {
             if (array_key_exists($key, $rs)) {
                 if ($this->field->param2 === '1') {
                     $ret .= $key. "\r\n";

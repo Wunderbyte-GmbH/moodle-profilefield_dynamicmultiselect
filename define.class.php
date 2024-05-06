@@ -76,12 +76,13 @@ class profile_define_dynamicmultiselect extends profile_define_base {
 
     /**
      * Alter form based on submitted or existing data
-     * @param moodleform $form
+     *
+     * @param moodleform $mform
      */
-    public function define_after_data(&$form) {
+    public function define_after_data(&$mform) {
         global $DB;
         try {
-            $sql = $form->getElementValue('param1');
+            $sql = $mform->getElementValue('param1');
 
             if ($sql) {
                 $rs = $DB->get_records_sql($sql, null, 0, 20); // For this sample set, extract max 20 results.
@@ -97,16 +98,16 @@ class profile_define_dynamicmultiselect extends profile_define_base {
                         $defsample .= 'id: '.format_string($record->id) .' - data: '.$sampleval."\n";
                     }
                 }
-                $form->setDefault('sql_count_data', $countdata);
-                $form->setDefault('sql_sample_data', $defsample);
+                $mform->setDefault('sql_count_data', $countdata);
+                $mform->setDefault('sql_sample_data', $defsample);
             } else {
-                $form->setDefault('sql_count_data', 0);
-                $form->setDefault('sql_sample_data', '');
+                $mform->setDefault('sql_count_data', 0);
+                $mform->setDefault('sql_sample_data', '');
             }
         } catch (Exception $e) {
             // We don't have to do anything here, since the error shall be handled by define_validate_specific.
-            $form->setDefault('sql_count_data', 0);
-            $form->setDefault('sql_sample_data', '');
+            $mform->setDefault('sql_count_data', 0);
+            $mform->setDefault('sql_sample_data', '');
         }
     }
 
@@ -117,7 +118,7 @@ class profile_define_dynamicmultiselect extends profile_define_base {
      * @param  array $files
      * @return array
      */
-    public function define_validate_specific($data, $files) {
+    public function define_validate_specific($data, $files): array {
         $err = array();
 
         $data->param1 = str_replace("\r", '', $data->param1);
