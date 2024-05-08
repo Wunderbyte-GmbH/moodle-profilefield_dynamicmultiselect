@@ -155,7 +155,9 @@ class profile_field_dynamicmultiselect extends profile_field_base {
      * @param stdClass $user
      */
     public function edit_load_user_data($user) {
-        $user->{$this->inputname} = profile_field_dynamicmultiselect::$datakey;
+        if ($this->data !== null) {
+            $user->{$this->inputname} = profile_field_dynamicmultiselect::$datakey;
+        }
     }
 
     /**
