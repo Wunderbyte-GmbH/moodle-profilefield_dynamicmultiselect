@@ -35,7 +35,7 @@ class profile_field_dynamicmultiselect extends profile_field_base {
     public array $options;
 
     /** @var array $datakey */
-    public static array $datakey;
+    public static array $datakey = [];
 
     /** @var  array @calls array indexed by @fieldid-$userid. It keeps track of recordset,
      * so that we don't do the query twice for the same field */
